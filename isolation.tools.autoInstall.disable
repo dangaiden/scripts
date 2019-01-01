@@ -5,9 +5,34 @@ Get-VM | Get-AdvancedSetting | Select Name, Value | Export-CSV
 
 
 
- C:\> Foreach ($vm in $list)
->> {
->> Get-VM $vm | Select Name | ft -auto
->>  Foreach ($vmm in $vm)
->>     {Get-VM $vm | Get-AdvancedSetting -Name isolation.tools.autoInstall.disable | Select Name, Value}
->> }
+
+
+
+
+
+
+
+$list=Get-Cluster -Name "COLS" | Get-VM 
+
+#list properties of all VMs
+$list=Get-Cluster -Name "RyuCluster" | Get-VM
+
+
+ Foreach ($vm in $list)
+{
+ Get-VM $vm | Select Name | ft -auto
+Foreach ($vmm in $vm)
+{Get-VM $vm | Get-AdvancedSetting -Name isolation.tools.autoInstall.disable | Select Name, Value}
+}
+
+
+#Config
+ Foreach ($vm in $list)
+{
+ Get-VM $vm | Select Name | ft -auto
+Foreach ($vmm in $vm)
+	{
+	Get-VM $vm | Get-AdvancedSetting -Name isolation.tools.autoInstall.disable | Set-AdvancedSetting -Value  false -Confirm:$false
+	}
+}
+
