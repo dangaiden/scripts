@@ -1,30 +1,22 @@
-$list=Get-Datacenter -Name "COLS" | Get-VM | Select Name
-Foreach ($vm in $list)
-{
-Get-VM | Get-AdvancedSetting | Select Name, Value | Export-CSV 
+####$list=Get-Cluster -Name "RyuCluster" | Get-VM
 
 
 
 
 
-
-
-
-
+Connect-VIServer evw1901139.wkeie.internal
 
 $list=Get-Cluster -Name "COLS" | Get-VM 
 
 #list properties of all VMs
-$list=Get-Cluster -Name "RyuCluster" | Get-VM
 
-
- Foreach ($vm in $list)
+Foreach ($vm in $list)
 {
  Get-VM $vm | Select Name | ft -auto
-Foreach ($vmm in $vm)
-{Get-VM $vm | Get-AdvancedSetting -Name isolation.tools.autoInstall.disable | Select Name, Value}
-}
-
+	Foreach ($vmm in $vm)
+	{
+		Get-VM $vm | Get-AdvancedSetting -Name isolation.tools.autoInstall.disable | Select Name, Value}
+	}
 
 #Config
  Foreach ($vm in $list)
@@ -36,3 +28,89 @@ Foreach ($vmm in $vm)
 	}
 }
 
+------------------------------------------------------------------------------------------------------------------------------
+
+ 
+
+$desired = @(
+
+    @{
+
+        Name = 'isolation.tools.copy.disable'
+
+        Value = $true
+
+    },
+
+    @{
+
+        Name = 'isolation.tools.dnd.disable'
+
+        Value = $true
+
+    }
+
+)
+
+$cluster = Get-Cluster 'Management Cluster'
+
+$poweredoffvmsincluster = $cluster | Get-VM | Where-Object {$_.powerstate -eq "poweredoff"}
+
+ 
+
+ 
+
+ 
+
+ForEach($VM in $poweredoffvmsincluster) {
+
+    $desired | %{
+
+        $setting = Get-AdvancedSetting -Entity $vm -Name $_.Name
+
+        if($setting){
+
+            if($setting.Value -eq $_.Value){
+
+                Write-Output "Setting $($_.Name) present and set correctly"
+
+            }
+
+            else{
+
+                Write-Output "Setting $($_.Name) present but not set correctly"
+
+                Set-AdvancedSetting -AdvancedSetting $setting -Value $_.Value -Confirm:$false
+
+            }
+
+        }
+
+        else{
+
+            Write-Output "Setting $($_.Name) not present."
+
+            New-AdvancedSetting -Name $_.Name -Value $_.Value -Entity $vm -Confirm:$false
+
+        }
+
+    }
+
+}
+
+------------------------------------------------------------------------------------------------------------------
+******************************************************************************************************************
+
+$list=Get-Datacenter -Name "WKCOLS" | Get-VM | Select Name
+Foreach ($vm in $list)
+{
+Get-VM | Get-AdvancedSetting | Select Name, Value | Export-CSV "C
+
+
+
+Foreach ($vm in $list)
+{
+  Write-Output "---------------------------------------------------------------------"
+  Get-AdvancedSetting -Entity $vm -Name isolation.tools.autoInstall.disable | Select Name, Value
+  Write-Output "($vm)"
+}
