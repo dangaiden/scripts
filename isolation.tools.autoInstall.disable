@@ -30,87 +30,48 @@ Foreach ($vmm in $vm)
 
 ------------------------------------------------------------------------------------------------------------------------------
 
- 
-
-$desired = @(
-
-    @{
-
-        Name = 'isolation.tools.copy.disable'
-
-        Value = $true
-
-    },
-
-    @{
-
-        Name = 'isolation.tools.dnd.disable'
-
-        Value = $true
-
-    }
-
-)
-
-$cluster = Get-Cluster 'Management Cluster'
-
-$poweredoffvmsincluster = $cluster | Get-VM | Where-Object {$_.powerstate -eq "poweredoff"}
-
- 
-
- 
-
- 
-
-ForEach($VM in $poweredoffvmsincluster) {
-
-    $desired | %{
-
-        $setting = Get-AdvancedSetting -Entity $vm -Name $_.Name
-
-        if($setting){
-
-            if($setting.Value -eq $_.Value){
-
-                Write-Output "Setting $($_.Name) present and set correctly"
-
-            }
-
-            else{
-
-                Write-Output "Setting $($_.Name) present but not set correctly"
-
-                Set-AdvancedSetting -AdvancedSetting $setting -Value $_.Value -Confirm:$false
-
-            }
-
-        }
-
-        else{
-
-            Write-Output "Setting $($_.Name) not present."
-
-            New-AdvancedSetting -Name $_.Name -Value $_.Value -Entity $vm -Confirm:$false
-
-        }
-
-    }
-
+ $list=Get-Cluster -Name "RyuCluster" | Get-VM
+#$setting = Get-AdvancedSetting -Entity $vm -Name isolation.tools.autoInstall.disable
+Write-Output "----------------------------BEFORE-----------------------------------"
+Foreach ($vm in $list)
+{
+Write-Output "---------------------------------------------------------------------"
+Get-AdvancedSetting -Entity $vm -Name isolation.tools.autoInstall.disable | Select Name, Value
+Write-Output "($vm)"
 }
 
-------------------------------------------------------------------------------------------------------------------
-******************************************************************************************************************
-
-$list=Get-Datacenter -Name "WKCOLS" | Get-VM | Select Name
+Write-Output "********************************************************************************"
+Write-Output "********************************************************************************"
+#Loop for each VM
 Foreach ($vm in $list)
 {
-Get-VM | Get-AdvancedSetting | Select Name, Value | Export-CSV "C
-
-
-
+	#Setting that we're going to change
+  $setting = Get-AdvancedSetting -Entity $vm -Name isolation.tools.autoInstall.disable
+  if($setting){
+			#If the setting value is false, nothing to do
+            if($setting.Value -eq $false)
+			{
+                Write-Output "Setting $vm present and set correctly"
+            }
+			#If it exists but has a different value than false, we change it to false
+            else{
+                Write-Output "Setting $vm present but not set correctly"
+                Write-Output "Changing value to false"
+				$setting | Set-AdvancedSetting -Value false -Confirm:$false
+            }
+			}
+			#Otherwise, if the setting has not been configured, we create the setting to false.
+        else{
+            Write-Output "Setting $vm not present."
+            New-AdvancedSetting -Entity $vm -Name isolation.tools.autoInstall.disable -Value false -Confirm:$false
+			} 
+}
+#report
+Write-Output "-------------------------------AFTER---------------------------------"
 Foreach ($vm in $list)
 {
-  Write-Output "---------------------------------------------------------------------"
-  Get-AdvancedSetting -Entity $vm -Name isolation.tools.autoInstall.disable | Select Name, Value
-  Write-Output "($vm)"
+Write-Output "---------------------------------------------------------------------"
+Write-Output "($vm)"
+Get-AdvancedSetting -Entity $vm -Name isolation.tools.autoInstall.disable | Select Name, Value
+
 }
