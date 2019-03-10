@@ -1,0 +1,1 @@
+New-OSCustomizationSpec -Name 'CustomSpecPCLI' -FullName 'FullName' -OrgName 'TestOrg' -OSType Windows -ChangeSid -AdminPassword VMware1! -Domain 'pokemon.jp' -TimeZone 090 -DomainCredentials (Read-Host -AsSecureString) -AutoLogonCount 1
